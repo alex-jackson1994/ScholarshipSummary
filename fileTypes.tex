@@ -1,0 +1,175 @@
+\documentclass[a4]{article}
+\usepackage{hyperref,array,amsmath,amsfonts}
+%opening
+\title{File Types used in PSMC}
+\author{Shaun Barker}
+
+% % % % % % % % % % % % %
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+	language=Java,
+	aboveskip=3mm,
+	belowskip=3mm,
+	showstringspaces=false,
+	columns=flexible,
+	basicstyle={\small\ttfamily},
+	numbers=none,
+	numberstyle=\tiny\color{black},
+	keywordstyle=\color{black},
+	commentstyle=\color{black},
+	stringstyle=\color{black},
+	breaklines=true,
+	breakatwhitespace=true,
+	tabsize=1
+}
+% % % % % % % % % % % % %
+\begin{document}
+
+\maketitle
+
+\section{FASTA (.fa, .fasta)}
+	FASTA (.fa, .fasta) is a plain text file format for storing DNA sequences. Each sequence that is recorded in a FASTA file is made up of two parts. Firstly a header is defined by a \verb|>| symbol and then the header text is written afterwards on the same line. Secondly the sequence is recorded in (up to) 80 character long lines composed of letters representing each base, or the potential bases. The allowable codes are listed in \url{http://www.bioinformatics.org/sms/iupac.html} and can also be seen in \ref{nucleotideCodeTable} in the appendix.
+	\begin{figure}[h]
+		\begin{lstlisting}
+			>ThisIsTheNameOfTheSequence This is an example description
+			AACAGATACTAGCTGATCGATCGATCGTACAGATACTAGCTGATCGATCGATCGATATATATATGCCGCGATACGTACGT
+			GGTATACTAGCTGATCGATCGATCGTACAGATACTAGCTGATCGATCGATCGATATATATATGCCGCGATACGTACGTAA
+			AACAGATACTAGCTGATCGATCGATCGTACAGATACTAGCTGATCGATCGATCGATATATATATGCCGCGATACGTACGT
+			GGTATACTAGCTGATCGATCGATCGTACAGATACTAGCTGATCGATCGATCGATATATATATGCCGCGATACGTACGTAA
+			>ThisIsTheNameOfTheNameOfTheNextSequence This is the second header
+			GGTATACTAGCTGATCGATCGATCGTACAGATACTAGCTGATCGATCGATCGATATATATATGCCGCGATACGTACGTAA
+			AACAGATACTAGCTGATCGATCGATCGTACAGATACTAGCTGATCGATCGATCGATATATATATGCCGCGATACGTACGT
+		\end{lstlisting}
+		\caption{An example of a FASTA file}
+	\end{figure}
+
+\section{FASTQ (.fq, .fastq, .fq.gz, .fastq.gz)}
+	FASTQ (.fq, .fastq, compressed as .fq.gz or .fastq.gz) files are an extension of FASTA files that also includes quality scores for each sequence. Each sequence data begins with a header, on the first line, denoted by a \verb|@| and the sequence is contained entirely on the second. After the sequence, the third line contains a description required to begin with a \verb|+|. Finally on the fourth line is the quality scores for the sequence, it must be exactly the same length as the sequence line, and the scores are ascii representations of numerical values. The scores, ranging from lowest to highest, are  
+	\begin{lstlisting}
+		!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
+	\end{lstlisting}
+	FASTQ files are commonly given by sequencing machines and are one of the most commonly used file types. 
+	\begin{figure}[h]
+		\begin{lstlisting}
+		@ThisIsTheNameOfTheSequence This is an example description
+		AACAGATACTAGCTGATCGATCGATCGTACAGATACTAGCTGATCGATCGATCGATATATATATGCCGCGATACGTACGTGGTATACTAGCTGATCGATCGATCGTACAGATACTAGCTGATCGATCGATCGATATATATATGCCGCGATACGTACGTAAAACAGATACTAGCTGATCGATCGATCGTACAGATACTAGCTGATCGATCGATCGATATATATATGCCGCGATACGTACGTGGTATACTAGCTGATCGATCGATCGTACAGATACTAGCTGATCGATCGATCGATATATATATGCCGCGATACGTACGTAA
+		+This is an additional description of the first sequence
+		AFLHDSFLHAJ#8129384($*U@HDJBVS(P*H#$RSHD%()(#I!HORDSJFHP@(OIA~~~J(*PHO!!!@(#*J$IOFS_____#RS*(H%POSJLDKFP@(*PIOESF(P*@#``)))))))))AFLHDSFLHAJ#8129384($*U@HDJBVS(P*H#$RSHD%()(#I!HORDSJFHP@(OIA~~~J(*PHO!!!@(#*J$IOFS_____#RS*(H%POSJLDKFP@(*PIOESF(P*@#``)))))))))AFLHDSFLHAJ#8129384($*U@HDJBVS(P*H#$RSHD%()(#I!HORDSFHP@S123we
+		@ThisIsTheNameOfTheNameOfTheNextSequence This is the second header
+		GGTATACTAGCTGATCGATCGATCGTACAGATACTAGCTGATCGATCGATCGATATATATATGCCGCGATACGTACGTAAAACAGATACTAGCTGATCGATCGATCGTACAGATACTAGCTGATCGATCGATCGATATATATATGCCGCGATACGTACGT
+		+This is the second sequence's additional description
+		6#8129384($*U@HDJBVS(P*H#$RSHD%()(#I!HORDSJFHP@(OIA~~~J(*PHO!!!@(#*J$IOFS_____#RS*(H%POSJLDKFP@(*PIOESF(P*@#``)))))))))AFLHDSFLHAJ#8129384($*U@HDJBVS(P*H#$RSH
+		\end{lstlisting}
+		\caption{An example of a FASTQ file}
+	\end{figure}
+	
+\section{SAM and BAM Files (.sam, .bam)}
+	SAM and BAM files are essentially equivalent, a BAM file is a binary version of a corresponding SAM file that is compressed and computer readable, the SAM file is the plain text human readable version of the same file. SAM files specify sequences, their quality scores and their alignment with respect to a reference genome (a reference genome is a single sequence that is accepted as being representative of a species as a whole, it is often made up of the most occuring fragments of many individuals). The latest specification of the file type is available online at \url{http://samtools.github.io/hts-specs/SAMv1.pdf}. Each sequence is entered on a new line and requires the fields listed in \ref{SAMspecs}.
+	
+
+\section{MS (.ms)}
+	MS (.ms) files are simulated output from MsHOT-lite (as well as MS, SCRM and other MS derivatives), made by Heng Li who also created the PSMC software amongst others used in bioinformatics. It contains a list of chromosomes, and in each of those chromosomes it lists the positions of heterozygous pairs as well as the type. The file begins with the call that created the file then each chromosome generated is listed. Each chromosome is stored between a \verb|@begin| and \verb|@end| statement. An example of an MS file can be seen in Figure \ref{msFile}.
+	\begin{figure}[h]
+		\begin{lstlisting}
+		./msHOT-lite 2 1 -t 30000 -r 6000 300000 -eN 0.01 0.1 -eN 0.06 1 -eN 0.2 0.5 -eN 1 1 -eN 2 2 -l 
+		//
+		@begin 11765
+		300000
+		37295	10
+		81727	01
+		104834	01
+		131283	01
+		191522	10
+		298343	01
+		@end
+		\end{lstlisting}
+		\caption{An example of a MS file}
+		\label{msFile}
+	\end{figure}
+
+\section{PSMC Input Files (.psmcfa)}
+	.psmcfa are plain text files generated by many of the utilities provided alongside PSMC. PSMC takes .psmcfa files as its only input. .psmcfa files contain a list of chromosomes and 60 character wide lines that denote where heterozygous pairs occur. Each character in the lines represent the bin  $[100i,100i+100]$ along the sequence, $i$ going from 0 to 100th of the the length of the sequence. The character is K if there is a heterozygous pair in that bin of the sequence and T otherwise.
+	\begin{figure}[h]
+		\begin{lstlisting}
+		>thisIsTheFirstSequenceName a short description
+		TKTKTKKTKTKTKTKTKKTKTKTKKKKKKKKTTTKKTKTKTKTKTKTKKTKTTKTKTKTK
+		KKKKTKKKKTKKKKKKKKTTTTTTTTTKKTKTKKKKKKKKKKKKKKKKKKKKKKKKKKTT
+		TTTTTTTTTTTTTKKKKKKKKKKTKKKKTKKKKKKKKKKKKKKKKKKKTTKKKKKKKKKK
+		TKKKTKTKKTKTKKTKTTTKTKTKTKTKTTKKTTKTKTKKKTKTKTKTKKTTTKTKTTKK
+		>thisIsTheSecondSequenceName another short description
+		KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+		KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
+		TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTKTTTTTTTTTTTTTTTTTTTTT
+		TTTTTTTTTTTKTTTTTTTTTTTTTTTTTKTTTTTTTTTTTTTTTTTTTTTTTTTKTTTT
+		\end{lstlisting}
+		\caption{An example of a .psmcfa file}
+	\end{figure}
+	
+\section{PSMC Output Files (.psmc)}
+	.psmc files are plain text files output by the program PSMC. They contain details on the iterations performed by the program and the values. They all have a header describing the file itself and this should be read to attempt to understand the output.
+
+\section{PSMC Plot Temporary Files (.0.txt)}
+	The utility \verb|psmc_plot.pl| is used to convert the PSMC output files (\verb|.psmc|) to a more usable format. By default it creates a plot of the data in a specified \verb|.psmc| file, however by using the parameter \verb|-R| in the command a text file containing data is also outputted. This text file is the temporary file used by \verb|psmc_plot.pl| and contains the estimate of population sizes at given times. It is a tab delimited text file with no headers (and hence is very convenient for use in other software like \verb|R|). 
+
+\appendix
+\section{Lookup Tables}
+	\begin{figure}[h]
+		\centering
+		\begin{tabular}{cc}
+			\hline
+			IUPAC Nucleotide Code & Base \\ 
+			\hline
+			A & Adenine \\ 
+			C & Cytosine \\ 
+			G & Guanine \\ 
+			T (or U) & Thymine (or Uracil) \\ 
+			R & A or G \\ 
+			Y & C or T \\ 
+			S & G or C \\ 
+			W & A or T \\ 
+			K & G or T \\ 
+			M & A or C \\ 
+			B & C or G or T \\ 
+			D & A or G or T \\ 
+			H & A Or C or T \\ 
+			V & A or C or G \\ 
+			N & any base \\ 
+			. or - & gap\\
+			\hline
+		\end{tabular}
+		\caption{The IUPAC Nucleotide Codes and their corresponding bases}
+		\label{nucleotideCodeTable}
+	\end{figure} 
+	\begin{figure}[h!]
+		\centering
+		\begin{tabular}{cllll}
+			\hline
+			{\bf Col} & {\bf Field} & {\bf Type} & {\bf Regexp/Range} & {\bf Brief description} \\
+			\hline
+			1 & {\sf QNAME} & String & \verb:[!-?A-~]{1,254}: & Query template NAME\\
+			2 & {\sf FLAG} & Int & {\tt [0,2$^{16}$-1]} & bitwise FLAG \\
+			3 & {\sf RNAME} & String & {\tt \char92*|[!-()+-\char60\char62-\char126][!-\char126]*} & Reference sequence NAME\\
+			4 & {\sf POS} & Int & {\tt [0,2$^{31}$-1]} & 1-based leftmost mapping POSition \\
+			5 & {\sf MAPQ} & Int & {\tt [0,2$^8$-1]} & MAPping Quality \\
+			6 & {\sf CIGAR} & String & {\tt \char92*|([0-9]+[MIDNSHPX=])+} & CIGAR string \\
+			7 & {\sf RNEXT} & String & {\tt \char92*|=|[!-()+-\char60\char62-\char126][!-\char126]*} & Ref. name of the mate/next read\\
+			8 & {\sf PNEXT} & Int & {\tt [0,2$^{31}$-1]} & Position of the mate/next read \\
+			9 & {\sf TLEN} & Int & {\tt [-2$^{31}$+1,2$^{31}$-1]} & observed Template LENgth \\
+			10 & {\sf SEQ} & String & {\tt \char92*|[A-Za-z=.]+} & segment SEQuence\\
+			11 & {\sf QUAL} & String & {\tt [!-\char126]+} & ASCII of Phred-scaled base QUALity+33 \\
+			\hline
+		\end{tabular}
+		\caption{The required fields for a single line in a SAM file. This is copied directly from the SAM file specifications available at \url{http://samtools.github.io/hts-specs/SAMv1.pdf}.}
+		\label{SAMspecs}
+		\begin{lstlisting}
+		QNAME FLAG RNAME POS MAPQ CIGAR RNEXT PNEXT TLEN SEQ QUAL
+		\end{lstlisting}
+		\caption{The layout of a line in a SAM file}
+	\end{figure}
+\end{document}
