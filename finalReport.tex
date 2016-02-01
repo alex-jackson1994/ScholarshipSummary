@@ -1,5 +1,11 @@
-\documentclass[]{article}
-\usepackage{cite,url}
+\documentclass[11pt,a4paper]{article}
+\usepackage{cite,url,hyperref,graphicx}
+\usepackage{alltt} 
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\topmargin}{-0.5in}
+\setlength{\textheight}{25cm}
 %opening
 \title{Analysing the Error of Predictions of the Pairwise Sequentially Markovian Coalescent (PSMC) Model}
 \author{Shaun D. Barker, Alex L. Jackson}
@@ -15,7 +21,7 @@
 \subsection{PSMC}
 The Pairwise Sequentially Markovian Coalescent (PSMC) model \cite{li2011inference} is a model for predicting population histories based on the whole genome of a single individual. PSMC uses the heterozygousity of the genome to estimate where recombination events have occurred in the genome. These estimates are completed using a Hidden Markov Model where the hidden state is the time at which recombination events have occurred and the observed variable is the heterozygousity of a bin of 100 base pairs. Using these estimates of the times of recombination events allows PSMC to then construct a population estimate over a period of time. 
 
-\section{Methods}
+\section{Methods}\label{sec:methods}
 \subsection{Generating Simulated Data} %This almost falls under background material
 We used genomic data simulated by msHOT-lite \cite{mshotlite} to analyse the error of the PSMC model. msHOT-lite is a modification by Li upon the genetic simulation software msHOT \cite{hellenthal2007mshot} which is itself a modification upon the original software package ms \cite{hudson2002generating}. msHOT-lite allows us to simulate the genome of an individual subject to a specified number of base pairs, chromosomes, mutation rate, recombination rate and population history. 
 An example of a msHOT-lite call is: 
@@ -72,12 +78,48 @@ PSMC gives scaled output \cite{li2011inference}. To get the time in terms of $N_
 
 Simulating the data through to obtaining the PSMC results is a multi-step process that can be automated to save time and effort. The script \verb|runSimulations.sh| completes the entire process autonomously, after some minor initial tweaking by the user. The user should modify the variable \verb|simulationName|, at the top of the file, which gives a prefix to every file and folder used in the script, and modify the \verb|msHOT-lite| function call, which dictates the population demography. After these changes are made the script will run through and simulate the genome, split the genome, usually up to 1024 times, generate the PSMC input files, run PSMC and finally write the output to a file. These files are then organised into folders based on the run parameters and compressed into a single archive. Analysis can then be easily performed on the files and their respective simulated results.
 
-\subsection{Error Analysis}
-A goal of this project was to find some measure of error for the PSMC output. As we were originally working with \verb|msHOT-lite| simulations, we knew the exact population dynamics, and thus had a baseline to compare PSMC runs with. The output of PSMC is a set of time points with populations corresponding to each point. The method of error analysis we used was turning the PSMC's time points into a piecewise constant function, as well as making the \verb|msHOT-lite| true population dynamics into a piecewise constant function. Then we took the absolute difference between the two functions and integrated over a reasonable range, on a log time scale. In Li's paper \cite{li2011inference}, his reported range where PSMC gave good results was 20 kyr to 30 Myr, so we used that as a starting point for the range of integration. However, as Li's decision appeared to be arbitrary, we also experimented with other limits of integration. When comparing many PSMC runs, we took the set of minimum time values, found the maximum of that, and used this value as the lower limit of integration. Similarly, the minimum of maximums was used as the upper limit of integration. This ensured that the piecewise constant functions were defined for all PSMC runs over the range of integration. Sometimes the limits of integration were chosen by eye - for example in \verb|steppeBisonPartAnalysis.R|, the lower and upper limits were chosen to be -1 and 1 (on a log scale), by looking at plots of the graphs and finding where they look decent.
+\subsection{PSMC Errors}
+A goal of this project was to find some measure of error for the PSMC output. As we were originally working with \verb|msHOT-lite| simulations, we knew the exact population dynamics, and thus had a baseline to compare PSMC runs with. The output of PSMC is a set of time points with populations corresponding to each point. The method of error analysis we used was turning the PSMC's time points into a piecewise constant function, as well as making the \verb|msHOT-lite| true population dynamics into a piecewise constant function. Then we took the absolute difference between the two functions and integrated over a reasonable range, on a log time scale. In Li's paper \cite{li2011inference}, his reported range where PSMC gave good results was 20 kyr to 30 Myr, so we used that as a starting point for the range of integration. However, as Li's decision appeared to be arbitrary, we also experimented with other limits of integration. When comparing many PSMC runs, we took the set of minimum time values, found the maximum of that, and used this value as the lower limit of integration. Similarly, the minimum of maximums was used as the upper limit of integration. This ensured that the piecewise constant functions were defined for all PSMC runs over the range of integration. Sometimes the limits of integration were chosen by eye - for example in \verb|steppeBisonPartAnalysis.R|, the lower and upper limits were chosen to be -1 and 1 (on a log scale), by looking at plots of the graphs and finding where they look decent. Finding errors was done by \verb|StringExtraction_ErrorAnalysis.R|.
+
+\subsection{Statistical Analysis of Error}
+A variety of simulations were run, using techniques laid out in Section \ref{sec:methods}. Various population dynamics were inputted in \verb|msHOT-lite|, mostly based upon runs from Li's paper \cite{li2011inference} (see various \verb|.sh| files in the msParameters folder). Each population dynamic was trialled with 1 chromosome of varying lengths - 0.1, 0.5, 1, 5, 10 and 20 Mbp. However, in the modelling, only the 20 Mbp length was used. The PSMC time intervals used were 10, 20, 30 and 40. To assess effect of contig length, each trial also had binary chromosome splitting, from $2^0$ to $2^{10}$. Each ms output file was converted to a \verb|.psmcfa| file, then PSMC was run, and the output extracted with \verb|removeDataFromPSMC.sh|. The R script \verb|MixedEffNew160128.R| was used in multiple regression and mixed effects modelling.
+
+After cleaning, a multiple regression model was found by a stepwise selection algorithm, beginning with the model \verb|Error ~ (Bp + Int + Pop_Dynamics_Type + lBpPC)^2|. The model found was \verb|Error ~ Bp + Int + Pop_Dynamics_Type + lBpPC + Bp:Int + Bp:Pop_Dynamics_Type + Bp:lBpPC + Int:Pop_Dynamics_Type|. A Box-Cox analysis was applied, and it was decided to take the square root of \verb|Error| (known as \verb|model2|). This was used as the basis for a mixed effect model.
+
+In order to fit the mixed effects models, the predictor variables were rescaled using R's \verb|scale()| function. Different models were fitted with the same fixed effects, but different levels of random effects (with variation around different \verb|Pop_Dynamics_Type|). On the basis of AIC, the mixed effects model \verb;RtError ~ Bp + Int + lBpPC + Bp:Int + Bp:lBpPC + (1 + Bp + Int | Pop_Dynamics_Type); was found to be the best.
+
+
 
 \section{Results}
+
+\subsection{Deleting Data}
+Analysis of the deleting data experiment using the R script \verb|sim2PartAnalysis.R| yielded the PSMC plots Figure \ref{deletedDataPsmcPlots} (showing the different population estimates) and Figure \ref{sim2ErrorVsMeanContigLength} (showing the error for different mean contig lengths). Figure \ref{sim2ErrorVsMeanContigLength} was found to give a straight line if a log transform was applied to the mean contig length.
+
+\begin{figure}[h]
+  \center
+  \includegraphics[width=1\linewidth]{figures/deletedDataPsmcPlots.png}
+  \caption{The output from PSMC for various amounts of deleted data.}\label{deletedDataPsmcPlots}
+\end{figure}
+
+\begin{figure}[h]
+  \center
+  \includegraphics[width=.7\linewidth]{figures/sim2ErrorVsMeanContigLength.png}
+  \caption{Relationship between error and mean contig length.}\label{sim2ErrorVsMeanContigLength}
+\end{figure}
+
+\subsection{Statistical Analysis of Error}
+To get an idea of the relationships between variables, a multiple regression model was fitted first (see \verb|MixedEffNew160128.R|).
+
 \section{Discussion}
+\subsection{Deleting Data}
+Might have been better to, instead of deleting lines and then shoving the remaining parts together, replaced the deleted lines with missing data (\verb|N| on the \verb|.psmcfa| file type).
+
 \section{Conclusion}
+
+\appendix
+\section{List of scripts}
++ description?
+
 \bibliographystyle{plain}
 \bibliography{bibliography}{}
 
