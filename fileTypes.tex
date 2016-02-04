@@ -1,5 +1,11 @@
 \documentclass[a4]{article}
 \usepackage{hyperref,array,amsmath,amsfonts}
+
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\topmargin}{-0.5in}
+\setlength{\textheight}{25cm}
 %opening
 \title{File Types used in PSMC}
 \author{Shaun Barker}
@@ -34,7 +40,7 @@
 \maketitle
 
 \section{FASTA (.fa, .fasta)}
-	FASTA (.fa, .fasta) is a plain text file format for storing DNA sequences. Each sequence that is recorded in a FASTA file is made up of two parts. Firstly a header is defined by a \verb|>| symbol and then the header text is written afterwards on the same line. Secondly the sequence is recorded in (up to) 80 character long lines composed of letters representing each base, or the potential bases. The allowable codes are listed in \url{http://www.bioinformatics.org/sms/iupac.html} and can also be seen in \ref{nucleotideCodeTable} in the appendix.
+	FASTA (.fa, .fasta) is a plain text file format for storing DNA sequences (see Figure \ref{fasta}). Each sequence that is recorded in a FASTA file is made up of two parts. Firstly a header is defined by a \verb|>| symbol and then the header text is written afterwards on the same line. Secondly the sequence is recorded in (up to) 80 character long lines composed of letters representing each base, or the potential bases. The allowable codes are listed in \url{http://www.bioinformatics.org/sms/iupac.html} and can also be seen in \ref{nucleotideCodeTable} in the appendix.
 	\begin{figure}[h]
 		\begin{lstlisting}
 			>ThisIsTheNameOfTheSequence This is an example description
@@ -46,11 +52,11 @@
 			GGTATACTAGCTGATCGATCGATCGTACAGATACTAGCTGATCGATCGATCGATATATATATGCCGCGATACGTACGTAA
 			AACAGATACTAGCTGATCGATCGATCGTACAGATACTAGCTGATCGATCGATCGATATATATATGCCGCGATACGTACGT
 		\end{lstlisting}
-		\caption{An example of a FASTA file}
+		\caption{An example of a FASTA file}\label{fasta}
 	\end{figure}
 
 \section{FASTQ (.fq, .fastq, .fq.gz, .fastq.gz)}
-	FASTQ (.fq, .fastq, compressed as .fq.gz or .fastq.gz) files are an extension of FASTA files that also includes quality scores for each sequence. Each sequence data begins with a header, on the first line, denoted by a \verb|@| and the sequence is contained entirely on the second. After the sequence, the third line contains a description required to begin with a \verb|+|. Finally on the fourth line is the quality scores for the sequence, it must be exactly the same length as the sequence line, and the scores are ascii representations of numerical values. The scores, ranging from lowest to highest, are  
+	FASTQ (.fq, .fastq, compressed as .fq.gz or .fastq.gz) files are an extension of FASTA files that also includes quality scores for each sequence (see Figure \ref{fastq}). Each sequence data begins with a header, on the first line, denoted by a \verb|@| and the sequence is contained entirely on the second. After the sequence, the third line contains a description required to begin with a \verb|+|. Finally on the fourth line is the quality scores for the sequence, it must be exactly the same length as the sequence line, and the scores are ascii representations of numerical values. The scores, ranging from lowest to highest, are  
 	\begin{lstlisting}
 		!"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~
 	\end{lstlisting}
@@ -66,15 +72,15 @@
 		+This is the second sequence's additional description
 		6#8129384($*U@HDJBVS(P*H#$RSHD%()(#I!HORDSJFHP@(OIA~~~J(*PHO!!!@(#*J$IOFS_____#RS*(H%POSJLDKFP@(*PIOESF(P*@#``)))))))))AFLHDSFLHAJ#8129384($*U@HDJBVS(P*H#$RSH
 		\end{lstlisting}
-		\caption{An example of a FASTQ file}
+		\caption{An example of a FASTQ file}\label{fastq}
 	\end{figure}
 	
 \section{SAM and BAM Files (.sam, .bam)}
-	SAM and BAM files are essentially equivalent, a BAM file is a binary version of a corresponding SAM file that is compressed and computer readable, the SAM file is the plain text human readable version of the same file. SAM files specify sequences, their quality scores and their alignment with respect to a reference genome (a reference genome is a single sequence that is accepted as being representative of a species as a whole, it is often made up of the most occuring fragments of many individuals). The latest specification of the file type is available online at \url{http://samtools.github.io/hts-specs/SAMv1.pdf}. Each sequence is entered on a new line and requires the fields listed in \ref{SAMspecs}.
+	SAM and BAM files are essentially equivalent. SAM files specify sequences, their quality scores and their alignment with respect to a reference genome (a reference genome is a single sequence that is accepted as being representative of a species as a whole, which is often made up of the most occuring fragments of many individuals). The latest specification of the file type is available online at \url{http://samtools.github.io/hts-specs/SAMv1.pdf}. Each sequence is entered on a new line and requires the fields listed in \ref{SAMspecs}. The SAM file is the plain text human readable. A BAM file is a binary version of a corresponding SAM file that is compressed and computer readable only. 
 	
 
 \section{MS (.ms)}
-	MS (.ms) files are simulated output from MsHOT-lite (as well as MS, SCRM and other MS derivatives), made by Heng Li who also created the PSMC software amongst others used in bioinformatics. It contains a list of chromosomes, and in each of those chromosomes it lists the positions of heterozygous pairs as well as the type. The file begins with the call that created the file then each chromosome generated is listed. Each chromosome is stored between a \verb|@begin| and \verb|@end| statement. An example of an MS file can be seen in Figure \ref{msFile}.
+	MS (.ms) files are simulated output from sHOT-lite (as well as MS, SCRM and other MS derivatives). It was written by Heng Li (who also created the PSMC software and others software used in bioinformatics). It contains a list of genome fragments (e.g. chromosomes/contigs/scaffolds), and in each of those fragments it lists the positions of heterozygous pairs as well as the type. The file begins with the call that created the file then each chromosome generated is listed. Each chromosome is stored between a \verb|@begin| and \verb|@end| statement. An example of an MS file can be seen in Figure \ref{msFile}.
 	\begin{figure}[h]
 		\begin{lstlisting}
 		./msHOT-lite 2 1 -t 30000 -r 6000 300000 -eN 0.01 0.1 -eN 0.06 1 -eN 0.2 0.5 -eN 1 1 -eN 2 2 -l 
@@ -89,32 +95,53 @@
 		298343	01
 		@end
 		\end{lstlisting}
-		\caption{An example of a MS file}
+		\caption{An example of a MS file.}
 		\label{msFile}
 	\end{figure}
+For further detail, see the ms paper by Hudson REF and the msHOT-lite repository at \url{}.
 
 \section{PSMC Input Files (.psmcfa)}
-	.psmcfa are plain text files generated by many of the utilities provided alongside PSMC. PSMC takes .psmcfa files as its only input. .psmcfa files contain a list of chromosomes and 60 character wide lines that denote where heterozygous pairs occur. Each character in the lines represent the bin  $[100i,100i+100]$ along the sequence, $i$ going from 0 to 100th of the the length of the sequence. The character is K if there is a heterozygous pair in that bin of the sequence and T otherwise.
+PSMC input files (.psmcfa) are plain text files (see Figure \ref{psmcfa}) generated by many of the utilities provided alongside PSMC. They are the only input files required by PSMC. The .psmcfa files contain a list of chromosomes/contigs/etc. and 60 character wide lines that denote where heterozygous pairs occur. Each character in the lines represent the bin  $[100i,100i+100)$ along the sequence, for each $i$ sequential non-overlapping 100bp bin along length of the sequence. The character is K if there is a heterozygous pair in that bin of the sequence, T if the bin is completely made of homozygous pairs, and N if the data is too low quality or missing.
 	\begin{figure}[h]
 		\begin{lstlisting}
-		>thisIsTheFirstSequenceName a short description
+		>thisIsTheFirstSequenceName
 		TKTKTKKTKTKTKTKTKKTKTKTKKKKKKKKTTTKKTKTKTKTKTKTKKTKTTKTKTKTK
 		KKKKTKKKKTKKKKKKKKTTTTTTTTTKKTKTKKKKKKKKKKKKKKKKKKKKKKKKKKTT
 		TTTTTTTTTTTTTKKKKKKKKKKTKKKKTKKKKKKKKKKKKKKKKKKKTTKKKKKKKKKK
 		TKKKTKTKKTKTKKTKTTTKTKTKTKTKTTKKTTKTKTKKKTKTKTKTKKTTTKTKTTKK
-		>thisIsTheSecondSequenceName another short description
+		>thisIsTheSecondSequenceName
 		KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
 		KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK
 		TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTKTTTTTTTTTTTTTTTTTTTTT
 		TTTTTTTTTTTKTTTTTTTTTTTTTTTTTKTTTTTTTTTTTTTTTTTTTTTTTTTKTTTT
 		\end{lstlisting}
-		\caption{An example of a .psmcfa file}
+		\caption{An example of a .psmcfa file.}\label{psmcfa}
 	\end{figure}
 	
 \section{PSMC Output Files (.psmc)}
-	.psmc files are plain text files output by the program PSMC. They contain details on the iterations performed by the program and the values. They all have a header describing the file itself and this should be read to attempt to understand the output.
+The .psmc output files are plain text files outputted by PSMC. They contain details on the iterations performed by the program and the values. They all have a header describing the file itself (see Figure \ref{psmcHeader}) and this should be read to attempt to understand the output. The final table in the .psmc file is the ``final'' result after 20 iterations of expectation-maximisation, and can be extracted with the \verb|removeDataFromPSMC.sh| script.
+
+Note: According to a comment by Heng Li at \url{https://hengli.uservoice.com/forums/152783-general/suggestions/6787405-shouldn-t-the-pi-k-column-in-the-psmc-output-be-be}, the \verb|\pi_k| column is not actually \verb|\pi_k|. It may be \verb|\sigma_k| instead.
+
+	\begin{figure}[h]
+		\begin{lstlisting}
+                  CC
+                  CC	Brief Description of the file format:
+                  CC	  CC  comments
+                  CC	  MM  useful-messages
+                  CC	  RD  round-of-iterations
+                  CC	  LL  \log[P(sequence)]
+                  CC	  QD  Q-before-opt Q-after-opt
+                  CC	  TR  \theta_0 \rho_0
+                  CC	  RS  k t_k \lambda_k \pi_k \sum_{l\not=k}A_{kl} A_{kk}
+                  CC	  DC  begin end best-k t_k+\Delta_k max-prob
+		\end{lstlisting}
+		\caption{The header description of a .psmc file.}\label{psmcHeader}
+	\end{figure}
 
 \section{PSMC Plot Temporary Files (.0.txt)}
+Note: We used this function a little at the beginning, but mostly used the raw output from the .psmc plot during the scholarship.
+
 	The utility \verb|psmc_plot.pl| is used to convert the PSMC output files (\verb|.psmc|) to a more usable format. By default it creates a plot of the data in a specified \verb|.psmc| file, however by using the parameter \verb|-R| in the command a text file containing data is also outputted. This text file is the temporary file used by \verb|psmc_plot.pl| and contains the estimate of population sizes at given times. It is a tab delimited text file with no headers (and hence is very convenient for use in other software like \verb|R|). 
 
 \appendix
@@ -137,7 +164,7 @@
 			M & A or C \\ 
 			B & C or G or T \\ 
 			D & A or G or T \\ 
-			H & A Or C or T \\ 
+			H & A or C or T \\ 
 			V & A or C or G \\ 
 			N & any base \\ 
 			. or - & gap\\
