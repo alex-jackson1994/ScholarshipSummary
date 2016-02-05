@@ -29,7 +29,7 @@ blah
 \section{Introduction}
 do at the end
 
-For further enquiries, I (Alex) can be contacted at \href{mailto:aj123@internode.on.net}{aj123@internode.on.net}.
+For further inquiries, I (Alex) can be contacted at \href{mailto:aj123@internode.on.net}{aj123@internode.on.net}.
 
 Scripts and other can be recovered from \url{https://github.com/alex-jackson1994/AlexBioProgs}, \url{https://github.com/alex-jackson1994/shaunScholarshipStuff} and \url{https://github.com/alex-jackson1994/ScholarshipSummary}. Apologies for the mess.
 
@@ -45,7 +45,7 @@ See the document \verb|fileTypes.pdf| for detail on the different file types.
 
 \section{Methods}\label{sec:methods}
 \subsection{Generating Simulated Data} %This almost falls under background material
-We used genomic data simulated by \href{https://github.com/lh3/foreign/tree/master/msHOT-lite}{msHOT-lite} \cite{mshotlite} to analyse the error of the PSMC model. msHOT-lite is a modification by Li upon the genetic simulation software msHOT \cite{hellenthal2007mshot} which is itself a modification upon the original software package ms \cite{hudson2002generating}. msHOT-lite allows us to simulate the genome of an individual subject to a specified number of base pairs, chromosomes, mutation rate, recombination rate and population history. 
+We used genomic data simulated by \href{https://github.com/lh3/foreign/tree/master/msHOT-lite}{msHOT-lite} to analyse the error of the PSMC model. msHOT-lite is a modification by Li upon the genetic simulation software msHOT \cite{hellenthal2007mshot} which is itself a modification upon the original software package ms \cite{hudson2002generating}. msHOT-lite allows us to simulate the genome of an individual subject to a specified number of base pairs, chromosomes, mutation rate, recombination rate and population history. 
 An example of a msHOT-lite call is: 
 
 \verb|msHOT-lite 2 1 -t 60000 -r 10000 1000000 -eN 1 2 -eN 2 4 -l >output.ms| 
@@ -75,7 +75,7 @@ Use the \verb|pileupBAMFile.sh| script. Make sure you change the paths to samtoo
 Every PSMC run requires only a \verb|.psmcfa| input file. This is a convenient place where data can be modified efficiently for experiments.
 
 \subsubsection{Splitting the Data}
-The first experiment we considered was the effect of splitting the contiguous sequences into many smaller sequences. This was accomplished using the Python script \verb|binarySplitPsmcfaPrint.py|. This script breaks each fragment in a \verb|.psmcfa| file into two equal length sequences. We did this recursively taking a simulated genome is splitting it up until the genome contained many more sequences than it initially did. The minimum size for a split contig was 1 line (squivalent to 6 kbp).
+The first experiment we considered was the effect of splitting the contiguous sequences into many smaller sequences. This was accomplished using the Python script \verb|binarySplitPsmcfaPrint.py|. This script breaks each fragment in a \verb|.psmcfa| file into two equal length sequences. We did this recursively taking a simulated genome is splitting it up until the genome contained many more sequences than it initially did. The minimum size for a split contig was 1 line (equivalent to 6 kbp).
 
 % I have no idea what happened with this.
 %\subsubsection{Combining the Data}
@@ -83,6 +83,10 @@ The first experiment we considered was the effect of splitting the contiguous se
 
 \subsubsection{Deleting Data}
 Another experiment we considered was deleting random data from the sequence. This was achieved using the Python script \verb|removeRandomPartsFromPsmcfa.py| which looped through the \verb|.psmcfa| file removing random lines from the file without deleting entire contigs. Physically a line in a \verb|.psmcfa| file represents 6000 base pairs, since a line is at most 60 characters long and each character is a bin of 100 base pairs. This was repeated, removing 10\%, 20\%, ... 90\% of the genome each time and running PSMC on the resulting smaller genomes using the Bash script \verb|partRemovalRepeated.sh|.
+
+It was suggested that a better alternative to randomly deleting lines would be to randomly replace lines with missing data (\verb|N| in the \verb|.psmcfa| file type). This would be representative of a low quality genome, and would allow comparison of error between a full genome and a genome with missing data.
+
+It may be possible to construct a predictor for error based upon the amount of missing data, but this would be based upon extrapolation, so would be dangerous.
 
 \subsubsection{Time Intervals}
 PSMC makes population history estimates over a variety of times which are split up into discrete intervals. The intervals are split between the present and a maximum estimation time $T_{max}$ which is chosen by PSMC (for more detail, see the S.I. of Li REF). PSMC takes a pattern of intervals in the form of a string '$a$*$b$' where this would be $a$ intervals of length $b$, note that these lengths are in a log scale. By default PSMC assumes a pattern of intervals '4+5*3+4' which is 4 intervals of length 1 followed by 5 intervals of length 3 followed by 4 intervals of length 1 again. For our experiments we ignored any intervals of length other than 1 and considered only splitting into equal length intervals of '10', '20', '30' and '40'.
@@ -111,10 +115,10 @@ Simulating the data through to obtaining the PSMC results is a multi-step proces
 If you want to run a whole array of splits, different PSMC intervals etc. on real data, use the script \verb|runDataCollection.sh| (which should be able to be modified if other things need to be tested). This will loop through different combinations of splits, intervals etc. and output the results each to its own folder. Also, summary statistics are given as in Section \ref{contigLengths}. This can be analysed in R using \verb|steppeBisonAnalysis.R| (obviously other things would have to be changed for using a different animal).
 
 \subsection{PSMC Errors}
-A goal of this project was to find a measure of error for the PSMC output. As we were originally working with \verb|msHOT-lite| simulations, we knew the exact population dynamics, and thus had a baseline to compare PSMC runs with. The output of PSMC is a set of time points with populations corresponding to each point. The method of error analysis we used was turning the PSMC's time points into a piecewise constant function, as well as making the \verb|msHOT-lite| true population dynamics into a piecewise constant function. Then we took the absolute difference between the two functions and integrated over a reasonable range, on a log time scale. In Li's paper \cite{li2011inference}, his reported range where PSMC gave good results was 20 kyr to 30 Myr, so we used that as a starting point for the range of integration. However, as Li's decision appeared to be arbitrary, we also experimented with other limits of integration. When comparing many PSMC runs, we took the set of minimum time values, found the maximum of that, and used this value as the lower limit of integration. Similarly, the minimum of maximums was used as the upper limit of integration. This ensured that the piecewise constant functions were defined for all PSMC runs over the range of integration. Sometimes the limits of integration were chosen by eye - for example in \verb|steppeBisonPartAnalysis.R|, the lower and upper limits were chosen to be -1 and 1 (on a log scale), by looking at plots of the graphs and finding where they look decent. Finding errors was done by \verb|StringExtraction_ErrorAnalysis.R|. However, with actual genomes, the ``error'' was the split/part genomes versus full genome, as opposed to versus true.
+A goal of this project was to find a measure of error for the PSMC output. As we were originally working with \verb|msHOT-lite| simulations, we knew the exact population dynamics, and thus had a baseline to compare PSMC runs with. The output of PSMC is a set of time points with relative populations corresponding to each point. The method of error analysis we used was turning the PSMC's time points into a piecewise constant function, as well as making the \verb|msHOT-lite| true population dynamics into a piecewise constant function. Then we took the absolute difference between the two functions and integrated over a reasonable range, on a log time scale. In Li's paper \cite{li2011inference}, his reported range where PSMC gave good results was 20 kyr to 30 Myr. However, as Li's decision appeared to be arbitrary, we also experimented with other limits of integration. When comparing many PSMC runs, we took the set of minimum time values, found the maximum of that, and used this value as the lower limit of integration. Similarly, the minimum of maximums was used as the upper limit of integration. This ensured that the piecewise constant functions were defined for all PSMC runs over the range of integration. Sometimes the limits of integration were chosen by eye - for example in \verb|steppeBisonPartAnalysis.R|, the lower and upper limits were chosen to be -1 and 1 (on a log scale, from the PSMC output in terms of $2N_0$ generations), by looking at plots of the graphs and finding where they look reasonable. We believe this is how Li chose his limits. Finding errors was done by \verb|StringExtraction_ErrorAnalysis.R|. However, with actual genomes, the ``error'' term we looked at was the split/part genomes versus full genome, as opposed to PSMC estimates versus true.
 
 \subsection{Statistical Analysis of Error}
-A variety of simulations were run, using techniques laid out in Section \ref{sec:methods}. Various population dynamics were inputted in \verb|msHOT-lite|, mostly based upon runs from Li's paper \cite{li2011inference} (see various \verb|.sh| files in the \verb|msParameters| folder). Each population dynamic was trialled with 1 chromosome of varying lengths - 0.1, 0.5, 1, 5, 10 and 20 Mbp. However, in the modelling, only the 20 Mbp length was used. The PSMC time intervals used were 10, 20, 30 and 40. To assess effect of contig length, each trial also had binary chromosome splitting, from $2^0$ to $2^{10}$. Each ms output file was converted to a \verb|.psmcfa| file, then PSMC was run, and the output extracted with \verb|removeDataFromPSMC.sh|. The R script \verb|MixedEffNew160128.R| was used in multiple regression and mixed effects modelling.
+A variety of simulations were run, using techniques laid out in Section \ref{sec:methods}. Various population dynamics were inputted in \verb|msHOT-lite|, mostly based upon runs from Li's paper \cite{li2011inference} (see various \verb|.sh| files in the \verb|msParameters| folder). Each population dynamic was trialled with 1 chromosome of varying lengths - 0.1, 0.5, 1, 5, 10 and 20 Mbp. However, in the modelling, only the 20 Mbp length was used. The PSMC time intervals used were 10, 20, 30 and 40. To assess effect of contig length, each trial also had binary chromosome splitting, from $2^0$ to $2^{10}$. Each ms output file was converted to a \verb|.psmcfa| file, then PSMC was run, and the output extracted with \verb|removeDataFromPSMC.sh|. The R script \verb|MixedEffNew160128.R| was used in multiple regression and mixed effects modelling (see this file for further detail).
 
 After cleaning, a multiple regression model was found by a stepwise selection algorithm, beginning with the model \verb|Error ~ (Bp + Int + Pop_Dynamics_Type + lBpPC)^2|. The model found was \verb|Error ~ Bp + Int + Pop_Dynamics_Type + lBpPC + Bp:Int + Bp:Pop_Dynamics_Type + Bp:lBpPC + Int:Pop_Dynamics_Type|. A Box-Cox analysis was applied, and it was decided to take the square root of \verb|Error| (known as \verb|model2|). This was used as the basis for a mixed effect model.
 
@@ -122,7 +126,7 @@ In order to fit the mixed effects models, the predictor variables were rescaled 
 
 
 
-\section{Results}
+\section{Results and Discussion}
 
 \subsection{Splitting the Data}
 We wanted to see the relationship between splits and error. For simulated data, we created the data such that all simulations had the same number of bp per chromosome. If we look at Figure \ref{fauxHumanErrorVsBpWithIntGrid}, which plots error against log base pairs per contig (split by different psmc intervals of 10, 20, 30, 40), we can see there is no consistent trend. This is just for a single type of population dynamics, ``fauxHuman''.
@@ -130,10 +134,10 @@ We wanted to see the relationship between splits and error. For simulated data, 
 \begin{figure}[h]
   \center
   \includegraphics[width=.7\linewidth]{figures/fauxHumanErrorVsBpWithIntGrid.png}
-  \caption{Relationship between error and bp per contig, split by different PSMC intercals for ``fauxHuman'' simulation.}\label{fauxHumanErrorVsBpWithIntGrid}
+  \caption{Relationship between error and bp per contig, split by different PSMC intervals for ``fauxHuman'' simulation.}\label{fauxHumanErrorVsBpWithIntGrid}
 \end{figure}
 
-For the steppe bison, there was an unusual trend when splitting the data (see Figure \ref{steppeBisonWeirdTrend}).
+For the steppe bison, there was an unusual trend when splitting the data (see Figure \ref{steppeBisonWeirdTrend}). The general trend was decreasing error as mean bp per contig was increased. However, there was an unusual drop in error for the splits of $2^8$ and $2^9$. This could possibly be due to error in scripting, but this is unlikely since all the runs were automated. It could also just be coincidence, and it would be interesting to see if this trend was replicated for different animals' genomes.
 
 \begin{figure}[h]
   \center
@@ -142,12 +146,12 @@ For the steppe bison, there was an unusual trend when splitting the data (see Fi
 \end{figure}
 
 \subsection{Deleting Data}
-Analysis of the deleting data experiment using the R script \verb|sim2PartAnalysis.R| yielded the PSMC plots Figure \ref{deletedDataPsmcPlots} (showing the different population estimates) and Figure \ref{sim2ErrorVsMeanContigLength} (showing the error for different mean contig lengths). Figure \ref{sim2ErrorVsMeanContigLength} was found to give a straight line if a log transform was applied to the mean contig length.
+Analysis of the deleting data experiment using the R script \verb|sim2PartAnalysis.R| yielded the PSMC plots Figure \ref{deletedDataPsmcPlots} (showing the different population estimates) and Figure \ref{sim2ErrorVsMeanContigLength} (showing the error for different mean contig lengths). Figure \ref{sim2ErrorVsMeanContigLength} was found to give a well-fitted straight line if a log transform was applied to the mean contig length.
 
 \begin{figure}[h]
   \center
   \includegraphics[width=1\linewidth]{figures/deletedDataPsmcPlots.png}
-  \caption{The output from PSMC for various amounts of deleted data.}\label{deletedDataPsmcPlots}
+  \caption{The output from PSMC for various amounts of deleted simulated data.}\label{deletedDataPsmcPlots}
 \end{figure}
 
 \begin{figure}[h]
@@ -231,20 +235,15 @@ Bp:Int    0.003 -0.004 -0.001  0.004
 Bp:lBpPC -0.013 -0.010  0.000  0.014  0.002
 \end{lstlisting}
 
-\section{Discussion}
-\subsection{Deleting Data}
-Might have been better to, instead of deleting lines and then shoving the remaining parts together, replaced the deleted lines with missing data (\verb|N| on the \verb|.psmcfa| file type).
-
-May be possible to have some kind of predictor for error, based upon the amount of genome you've got.
-
-\subsection{Statistical Analysis of Error}
-As the number of base pairs in a sample creates a lot of variance and the small (Mbp) levels we were examining, we decided to only use the largest sample size, 20 Mbp.
+As the number of base pairs in a sample creates a lot of variance and we were examining small (Mbp) levels compared with genomes (Gbp), we decided to only use the largest sample size, 20 Mbp. It probably would have been a better idea to use Gbp size genomes for testing.
 
 Multiple regression is a decent starting point, however as some of the data points originate from the same genome, the assumption of independence is violated. Additionally, some of the diagnostic plots looked dodgy (see assumption checking in \verb|MixedEffNew160128.R|).
 
 Next, mixed effects modelling was used. We allowed different intercepts to vary with the different type of population dynamics. On the basis of AIC, the best model was selected. However some of the diagnostic plots also looked off.
 
 Still working towards finding a reliable method of predicting error. The main factor affecting error prediction appears to be the population dynamics.
+
+A limitation of this error technique is that it doesn't give an estimate of variance in population dynamics at points of interest.
 
 \subsection{Misordering Data}
 We didn't actually do this. But it would be interesting to see how much the error changes if things e.g. sequences in the contigs are put in the wrong order, or assembled wrong. Could do this randomly shuffling lines.
@@ -255,19 +254,67 @@ We didn't actually do this. But it would be interesting to see how much the erro
 %\item Using something like \verb|binarySplitPsmcfaPrint.py| or a similar script, break up the large chromosome. This will generate new contigs.
 %\end{itemize}
 
-KANGAROOOOOOOOOOOOOOOOOOO
+\subsection{Coverage}
+
+\subsubsection{Goodness of Fit}
+Li \cite{li2011inference} has devised methods for checking goodness of fit, but I don't understand how to test this. In Section 2.2 of the Supplementary Information, he gives detail. There does not appear to be a script for extracting the statistics though.
+
+\section{Kangaroo Analysis}
+\subsection{Data Processing}
+Using a tammar wallaby reference genome (\url{acad-colab1@acad2.rc.adelaide.edu.au:/localscratch/Refs/Macropus_eugenii/Meug_1_0_Raw/Macropus_eugenii.Meug_1.0.dna_rm.toplevel.fast}), the kangaroo genome was aligned, giving a \verb|.bam| file (\url{acad-colab1@acad2.rc.adelaide.edu.au:/localscratch/AussieGenomes/Kangaroo/bwa_n0.04_seed/Kangaroo.Meug_1_0.realigned.bam}).
+
+The overall coverage was $3.9\times$, but given there were many missing values due to the reads covering only 55\% of the wallaby genome, the overall coverage for bases read at least once was $7.2\times$. This was found by the following code.
+\begin{lstlisting}
+# Depth
+samtools depth Kangaroo.Meug_1_0.realigned.bam > Kangaroo.Meug_1_0.realigned.depth
+# Genome size from bam file (to use instead of "NR" in previous command to get 'true' coverage)
+samtools view -H Kangaroo.Meug_1_0.realigned.bam | grep -P '^@SQ' | cut -f 3 -d ':' | awk '{sum+=$1} END {print sum}'
+# 2955773937
+# Coverage
+wc -l Kangaroo.Meug_1_0.realigned.depth
+# 1626674725
+# = 55.0% of genome (2955773937)
+# mean depth
+# for number of bases covered at least once (!!!)
+samtools depth Kangaroo.Meug_1_0.realigned.bam | awk '{sum+=$3; sumsq+=$3*$3} END { print "Average = ",sum/NR; print "Stdev = ",sqrt(sumsq/NR - (sum/NR)**2)}'
+# Average =  7.15569
+# Stdev =  23.6263
+# for all bases (use genome size instead of "NR" in previous command to compute 'true' coverage)
+samtools depth Kangaroo.Meug_1_0.realigned.bam |  awk '{sum+=$3; sumsq+=$3*$3} END { print "Average = ",sum/2955773937; print "Stdev = ",sqrt(sumsq/2955773937 - (sum/2955773937)**2)}'
+# Average =  3.93805
+# Stdev =  17.885
+\end{lstlisting}
+\textbf{I've got a feeling I have depth and coverage confused...}
+
+
+A pseudo-diploid sequence in the FASTQ format was generated by the following commands.
+\begin{lstlisting}
+samtools mpileup -EA -Q20 -C50 -u -f Macropus_eugenii.Meug_1.0.dna_rm.toplevel.fasta Kangaroo.Meug_1_0.realigned.bam bcftools call -c vcfutils.pl vcf2fq gzip > mpileupedKangaroo.fq.gz
+\end{lstlisting}
+
+This was converted into the \verb|.psmcfa| PSMC input format via the following command.
+\begin{lstlisting}
+fq2psmcfa redKangaroo.fq.gz > redKangaroo.psmcfa
+\end{lstlisting}
+PSMC was run, and population data was extracted.
+\begin{lstlisting}
+psmc redKangaroo.psmcfa > redKangarooInt4+5\*3+4.psmc
+/home/alex/Desktop/Data/shaunWork/myScripts/removeDataFromPSMC.sh redKangarooInt4+5\*3+4.psmc > redKangarooInt4+5\*3+4.txt
+\end{lstlisting}
+Rescaling and analysis were carried out in R (see \verb|redKangarooRPlots.R|).
+
 
 \section{Conclusion}
+
+\bibliographystyle{plain}
+\bibliography{MyBibliography}{}
+\newpage
 
 \appendix
 \section{List of scripts}
 + description?
 
-(geddit?)
 
-sorry
 
-\bibliographystyle{plain}
-\bibliography{bibliography}{}
 
 \end{document}
