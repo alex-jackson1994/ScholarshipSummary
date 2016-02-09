@@ -322,9 +322,53 @@ Different time intervals:
 
 \appendix
 \section{List of scripts}
-+ description?
+\subsection{alexScripts}
+These are the only R files worth looking at.
+\begin{table}[h]
+\begin{tabular}{p{6.5cm}p{8.5cm}}
+  \hline
+  \textbf{Name} & \textbf{Description} \\ 
+  \hline
+\parbox[t]{5cm}{\texttt{PSMC\_Regression/}\\ \texttt{StringExtraction\_ErrorAnalysis.R}} & Extracts information about the genome and PSMC run, does an error analysis, and outputs to text files. Designed for use with ms simulations, but can be adapted to be used with real data.\\ \hline
+  \parbox[t]{5cm}{\texttt{PSMC\_Regression/}\\ \texttt{MixedEffNew160128.R}} & Attempt at fitting multiple regression, and then mixed effects model to various simulated genomes. It wasn't successful in producing a good model. There may be some dodgy things here, like failing independence assumptions, and using a Box-Cox transform for a mixed effects model (?). \\ \hline
+  \parbox[t]{5cm}{\texttt{redKangaroo/}\\ \texttt{redKangarooRPlots.R}} & Plots various PSMC runs of the red kangaroo dataset. Also includes ice age start and end. \\ \hline
+  \texttt{Mixed Effects Test.R} & An example, following the instructions of Zuur (2009) on how to fit mixed effects models in R.
+  \hline
+\end{tabular}
+\end{table}
 
+\subsection{shaunScripts}
+These scripts have short comments at the beginning, which gives some detail on how they work. Paths to programs inside the scripts will probably have to be changed. I advise putting the directories with PSMC etc. in your bash \verb|.profile| file, so that you can just write \verb|psmc| instead of \verb|/path/to/file/psmc| every time.
 
-
+All python scripts require python 3.
+\begin{table}[h]
+\begin{tabular}{p{6.5cm}p{8.5cm}}
+  \hline
+  \textbf{Name} & \textbf{Description} \\ 
+  \hline
+  \parbox[t]{5cm}{\texttt{genome2PSMC/}\\ \texttt{extendSplits.sh}} & Splits simulated data in a binary manner up to 131072. Use it if you've already done binary splits up to 1024.\\ \hline
+  \parbox[t]{5cm}{\texttt{genome2PSMC/}\\ \texttt{pileupBAMFile.sh}} & Gets a \verb|.bam| file (genome) and a \verb|.fasta| file (reference) and matches them to produce a pseudo-diploid \verb|.fq.gz| file.\\ \hline
+  \parbox[t]{5cm}{\texttt{genome2PSMC/}\\ \texttt{runDataCollection.sh}} & Runs PSMC with 4 different time intercals, does binary splitting up to 1024, takes summary statistics on the genome, extracts population dynamics in text files.\\ \hline  
+  \texttt{binarySplitPsmcfaPrint.py} & Takes a \verb|.psmcfa| file and splits every contig/chromosome into two (with a floor of one line).\\ \hline  
+  \texttt{misorderPsmcfa.py} & Unfinished script which is supposed to take a \verb|.psmcfa| shuffle lines about randomly.\\ \hline  
+  \texttt{removeRandomContigs.py} & Removes contigs randomly from a \verb|.psmcfa| file.\\ \hline  
+\texttt{removeRandomPartsFromPsmcfa.py} & Removes lines randomly from a \verb|.psmcfa| file.\\ \hline  
+\texttt{reorderContigs.py} & Shuffles the order of contigs in a \verb|.psmcfa| file. On its own, this does not change the output of PSMC. \\ \hline
+\texttt{splitFasta.py} & Splits a \verb|.fasta| file and creates a text file for every contig. I would strongly advise against this, splitting is much more efficient on a \verb|.psmcfa| file, and if you run this on something with a billion contigs...\\ \hline  
+\texttt{splitMs.py} & Same as \verb|splitFasta.py| but for \verb|.ms| output.\\ \hline 
+\texttt{summaryStatisticsPsmcfa.py} & Gives tab delimited table of the minimum, maximum, mean, median and total length of all the contigs in a \verb|.psmcfa| file. \\ \hline
+\texttt{growthDataSlidingWindowError.R} & Does a sliding window-style error analysis. \\ \hline
+\texttt{steppeBisonPartAnalysis.R} & Looks at what happens to error if you remove parts of the steppe bison genome. \\ \hline
+\texttt{steppeBisonSplitAnalysis.R} & Looks at what happens to error if you perform binary splitting the steppe bison genome. \\ \hline
+\texttt{combinePsmcfa.sh} & Combines all contigs in a \verb|.psmcfa| file to create one giant contig! \\ \hline
+\texttt{manyMs2Psmcfa.sh} & Converts all \verb|.ms| files in the directory to \verb|.psmcfa| files. \\ \hline
+\texttt{manyPsmc2Plot.sh} & Produces plots from all \verb|.psmc| files in the directory using the util \verb|psmc_plot.pl|. We usually used R to make plots though. \\ \hline
+\texttt{manyPsmcfa2psmc.sh} & Runs PSMC with 10 time intervals on all \verb|.psmcfa| files in the directory. \\ \hline
+\texttt{ms2plots.sh} & Combines the above three scripts. \\ \hline
+\texttt{partRemovalRepeated.sh} & Removes 10, 20, 30, ... , 90\% of a \verb|.psmcfa| file. \\ \hline
+\texttt{removeDataFromPSMC.sh} & Takes population dynamics and relevant times from the last iteration in the PSMC process. Probably something that needs to be added is also taking PSMC's estimate of $\theta_0$ (the second number on the \verb|TR| line, take from the last iteration.)\\ \hline
+\texttt{runSimulations.sh} & For a given set of population dynamics (specified in-file), will run ms with varying genome sizes, covert to \verb|.psmcfa|, perform PSMC with different time intervals, and extract the estimates of population dynamics. \\ \hline
+\end{tabular}
+\end{table}
 
 \end{document}
