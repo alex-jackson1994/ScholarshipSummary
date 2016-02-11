@@ -22,60 +22,55 @@ breaklines=true
 
 \maketitle
 
-\begin{abstract}
-blah
-
-\end{abstract}
-\section{Introduction}
-do at the end
-
+%\begin{abstract}
+%blah
+%
+%\end{abstract}
+\section{Miscellaneous}
 For further inquiries, I (Alex) can be contacted at \href{mailto:aj123@internode.on.net}{aj123@internode.on.net}.
 
-Scripts and other can be recovered from \url{https://github.com/alex-jackson1994/AlexBioProgs}, \url{https://github.com/alex-jackson1994/shaunScholarshipStuff} and \url{https://github.com/alex-jackson1994/ScholarshipSummary}. Apologies for the mess.
+If for some reason you can't get files from the dropbox, scripts and other things can be recovered from \url{https://github.com/alex-jackson1994/AlexBioProgs}, \url{https://github.com/alex-jackson1994/shaunScholarshipStuff} and \url{https://github.com/alex-jackson1994/ScholarshipSummary}. Apologies for the mess!
 
 \section{Background Material}
 \subsection{PSMC}
-The Pairwise Sequentially Markovian Coalescent (PSMC) model \cite{li2011inference} is a model for estimating past population dynamics based on the  genome of a single individual. PSMC uses the heterozygousity of the genome to estimate where recombination events have occurred in the genome. These estimates are found using a Hidden Markov Model. A genome is split into many consecutive, non-overlapping 100 bp ``bins''. The observations are whether each of the bins contains a heterozygous pair (``1''), is homozygous (``0''), or data is missing (``.''). The state space is the set of non-overlapping time intervals from the present back in time. The hidden state is the time interval into which the TMRCA for each bin falls. This allows PSMC to then construct a population estimate over a period of time. 
+The Pairwise Sequentially Markovian Coalescent (PSMC) model \cite{li2011inference} is a method for estimating past population dynamics based on the  genome of a single individual. PSMC uses the heterozygousity of the genome to estimate where recombination events have occurred in the genome. These estimates are found using a Hidden Markov Model (for an introduction to HMMs, see the paper by Rabiner \cite{rabiner1989tutorial}). A genome is split into many consecutive, non-overlapping 100 bp ``bins''. The observations are whether each of the bins contains a heterozygous pair (``1''), is homozygous (``0''), or data is missing (``.''). The state space is the set of non-overlapping time intervals from the present back in time. The hidden state is the time interval into which the TMRCA for each bin falls. This allows PSMC to then construct a population estimate over a period of time. 
 
-For further detail, see the paper by Li \cite{li2011inference} (the Methods section in particular gives a good overview) as well as the supplementary information for detail, and the package's README at \url{https://github.com/lh3/psmc}.
+For further detail, see the paper by Li \cite{li2011inference} (the Methods section in particular gives a starting point) as well as the supplementary information for detail, and the package's README at \url{https://github.com/lh3/psmc}.
 
 \subsection{File Types}
-See the document \verb|fileTypes.pdf| for detail on the different file types.
+See the document \verb|fileTypes.pdf| for detail on the different file types (FASTA, FASTQ, SAM, BAM, MS, PSMCFA, PSMC).
 
 
 \section{Methods}\label{sec:methods}
 \subsection{Generating Simulated Data} %This almost falls under background material
-We used genomic data simulated by \href{https://github.com/lh3/foreign/tree/master/msHOT-lite}{msHOT-lite} to analyse the error of the PSMC model. msHOT-lite is a modification by Li upon the genetic simulation software msHOT \cite{hellenthal2007mshot} which is itself a modification upon the original software package ms \cite{hudson2002generating}. msHOT-lite allows us to simulate the genome of an individual subject to a specified number of base pairs, chromosomes, mutation rate, recombination rate and population history. 
+We used genomic data simulated by msHOT-lite (\url{https://github.com/lh3/foreign/tree/master/msHOT-lite}) in our error analysis of the PSMC model. msHOT-lite is a modification by Li upon the genetic simulation software msHOT \cite{hellenthal2007mshot}, which is itself a modification upon the original software package ms \cite{hudson2002generating}. msHOT-lite allows us to simulate the genome of an individual subject to a specified number of base pairs, chromosomes, mutation rate, recombination rate and population history. 
 An example of a msHOT-lite call is: 
 
 \verb|msHOT-lite 2 1 -t 60000 -r 10000 1000000 -eN 1 2 -eN 2 4 -l >output.ms| 
-This call simulates a diploid genome with a single chromosome (\verb|msHOT-lite 2 1|). Then \verb|-t 60000| sets the parameter $\theta$ to 60000 where $\theta=4N_0\mu$, where $\mu$ is the neutral mutation rate for the entire genome and $N_0$ is the initial population size. Then \verb|-r 10000 1000000| sets the parameter $\rho$ to 10000 and the number of base pairs per chromosome to 1000000 where $\rho=4N_0r$ and $r$ is the recombination probability per generation. Lastly \verb|-eN 1 2 -eN 2 4| introduces two population changes in the species history, firstly at time 1 (which is $4N_0$ generations ago) the population is set to 2 (which is $2\times4N_0$) and then at time 2 (which is $2\times4N_0$ generations ago) the population is set to 4 (which is $4\times4N_0$).
+This call simulates a diploid genome with a single chromosome (\verb|msHOT-lite 2 1|). Then \verb|-t 60000| sets the parameter $\theta$ to 60000 where $\theta=4N_0\mu$, where $\mu$ is the neutral mutation rate for the entire genome and $N_0$ is the initial population size. Then \verb|-r 10000 1000000| sets the parameter $\rho$ to 10000 and the number of base pairs per chromosome to 1000000 where $\rho=4N_0r$ and $r$ is the recombination probability per generation. Lastly \verb|-eN 1 2 -eN 2 4| introduces two population changes in the species history, firstly at time 1 (which is $4N_0$ generations ago) the population is set to 2 (which is $2\times4N_0$) and then at time 2 (which is $2\times4N_0$ generations ago) the population is set to 4 (which is $4\times4N_0$). The manual by Hudeson \cite{hudson2002generating} provides further detail.
 
-msHOT-lite can output in several different formats, we used the \verb|-l| switch that outputs a text file containing a list of coordinates for heterozygous base pairs. These were denoted these as having the \verb|.ms| file extension. The \verb|-l| switch is very important - if it is not used, PSMC will not be able to run properly. The PSMC software package \cite{li2011inference} provides a Perl script called \verb|ms2psmcfa.pl| that converts from this file format into the input format \verb|.psmcfa| that PSMC takes as an input. The file format \verb|.psmcfa| is a FASTA-like format, each sequence is given a header line started by \verb|>| and the sequence is recorded on 60 character long lines afterwards. Each character on these lines represents a bin of 100 base pairs and whether at least one heterozygous base pair exists within that bin.
+msHOT-lite can output several different formats. We used the \verb|-l| switch that outputs a text file containing a list of coordinates for heterozygous base pairs. We gave these the \verb|.ms| file extension. The \verb|-l| switch is very important - if it is not used, PSMC will not be able to run properly. The PSMC software package provides a Perl script called \verb|ms2psmcfa.pl|, which converts ms ouput into the \verb|.psmcfa| format that PSMC takes as an input. The file format \verb|.psmcfa| is FASTA-like. Each contig in the file is given a header line started by \verb|>|, and the sequence is recorded on 60 character long lines afterwards. Each character on these lines corresponds to a bin of 100 base pairs and shows whether at least one heterozygous base pair within that bin.
 
 \subsection{Processing Real Data}
-Got the bison data from the ACAD server: The path for the bison reference genome is \verb|/localscratch/Refs/Bison_bison/Bos_taurus_BWA6_2_2015_08/Bison_UMD1_0.fasta| and the \verb|.bam| files required are in the folder \verb|/localscratch/jsoubrier/Bison_Genomes/BisonRef_MQ25|.
+We took bison data from the ACAD server. The path for the bison reference genome is \verb|/localscratch/Refs/Bison_bison/Bos_taurus_BWA6_2_2015_08/Bison_UMD1_0.fasta| and the \verb|.bam| files required are in the folder \verb|/localscratch/jsoubrier/Bison_Genomes/BisonRef_MQ25|.
 
-Working with real data requires a different approach to create the required \verb|.psmcfa| input file. For our work we were given a steppe bison genome in a binary alignment format (\verb|.bam|) file (the format of which was first described in \cite{li2009sequence}) as well as a reference bison genome as a FASTA (\verb|.fa|) file. The first step was to create a pseudo-diploid sequence in the FASTQ (\verb|.fq|) format from this data using the Samtools suite (we used version 1.3). This was accomplished using the following commands:
-\begin{verbatim}
-samtools mpileup -EA -Q20 -C50 -u -f refBison.fasta SteppeBison.bam \ 
-bcftools call -c \
-vcfutils.pl vcf2fq \
-gzip > mpileupedSteppeBison.fq.gz
-\end{verbatim}
-This command has four parts, firstly it performs a pileup where the steppe bison data is compared to the reference bison data. The pseudo-diploid sequence is then created\ using bcftools.  Then the output from that data is converted into FASTQ format using vcfutils. Lastly the whole thing is compressed using gzip. 
+Working with real data requires a different approach to create the \verb|.psmcfa| PSMC input file. For our work we took a steppe bison genome in a binary alignment format (\verb|.bam|) file (the format of which was first described in \cite{li2009sequence}) as well as a reference bison genome as a FASTA (\verb|.fa|) file. The first step was to create a pseudo-diploid sequence in the FASTQ (\verb|.fq|) format from this data using the Samtools suite (we used version 1.3). This was accomplished using the following commands:
+\begin{lstlisting}
+samtools mpileup -EA -Q20 -C50 -u -f refBison.fasta SteppeBison.bam | bcftools call -c | vcfutils.pl vcf2fq | gzip > mpileupedSteppeBison.fq.gz
+\end{lstlisting}
+This command has four parts. Firstly, it performs a pileup where the steppe bison data is compared to the reference bison data. The pseudo-diploid sequence is then created\ using bcftools.  Then the output from that data is converted into FASTQ format using vcfutils. Finally, the whole thing is compressed using gzip. 
 
 We call it pseudo-diploid as we are not finding hetero/homozygous sites by comparing chromosomal pairs. Instead, we compare the reference and the sequence, and differences between them are called heterozygous.
 
-Once in this format we can use a utility provided with PSMC to create the \verb|.psmcfa| input file. PSMC includes the utility \verb|fq2psmcfa| that converts compressed or uncompressed FASTQ format files into the required \verb|.psmcfa| input file.
+Once in this format we can use a utility provided with PSMC to create the \verb|.psmcfa| input file. PSMC includes the \verb|fq2psmcfa| script that converts compressed or uncompressed FASTQ format files into the required \verb|.psmcfa| input file.
 
-Use the \verb|pileupBAMFile.sh| script. Make sure you change the paths to samtools, bcftools and vcfutils, as well as the input variables. Samtools can be found at \url{https://github.com/samtools/samtools} and bcftools/vcfutils from \url{https://github.com/samtools/bcftools}.
+Our \verb|pileupBAMFile.sh| script can be used to run the above set of commands, or they can just be typed in. If using the script, make sure you change the paths to samtools, bcftools and vcfutils, as well as the input variables. Samtools can be found at \url{https://github.com/samtools/samtools} and bcftools/vcfutils from \url{https://github.com/samtools/bcftools}.
 
-\subsection{Setting up experiments} %thats an atrocious title
-Every PSMC run requires only a \verb|.psmcfa| input file. This is a convenient place where data can be modified efficiently for experiments.
+\subsection{Data manipulation} 
+Every PSMC run requires only a \verb|.psmcfa| input file. This is a convenient place where data can be modified efficiently for experiments. It is memory-efficient as each character represents 100 base pairs. Also, you can modify simulated or real data in the same way if it is converted to the \verb|.psmcfa| format.
 
 \subsubsection{Splitting the Data}
-The first experiment we considered was the effect of splitting the contiguous sequences into many smaller sequences. This was accomplished using the Python script \verb|binarySplitPsmcfaPrint.py|. This script breaks each fragment in a \verb|.psmcfa| file into two equal length sequences. We did this recursively taking a simulated genome is splitting it up until the genome contained many more sequences than it initially did. The minimum size for a split contig was 1 line (equivalent to 6 kbp).
+The first experiment we considered was the effect of splitting the individual cotigs into smaller contigs. This was accomplished using the Python script \verb|binarySplitPsmcfaPrint.py|. This script breaks each fragment in a \verb|.psmcfa| file into two equal length sequences. We did this recursively, taking a simulated genome and splitting it up until the genome contained many more sequences than it initially did. The minimum size for a split contig was set to 1 line (equivalent to 6 kbp).
 
 % I have no idea what happened with this.
 %\subsubsection{Combining the Data}
@@ -84,46 +79,44 @@ The first experiment we considered was the effect of splitting the contiguous se
 \subsubsection{Deleting Data}
 Another experiment we considered was deleting random data from the sequence. This was achieved using the Python script \verb|removeRandomPartsFromPsmcfa.py| which looped through the \verb|.psmcfa| file removing random lines from the file without deleting entire contigs. Physically a line in a \verb|.psmcfa| file represents 6000 base pairs, since a line is at most 60 characters long and each character is a bin of 100 base pairs. This was repeated, removing 10\%, 20\%, ... 90\% of the genome each time and running PSMC on the resulting smaller genomes using the Bash script \verb|partRemovalRepeated.sh|.
 
-It was suggested that a better alternative to randomly deleting lines would be to randomly replace lines with missing data (\verb|N| in the \verb|.psmcfa| file type). This would be representative of a low quality genome, and would allow comparison of error between a full genome and a genome with missing data.
 
-It may be possible to construct a predictor for error based upon the amount of missing data, but this would be based upon extrapolation, so would be dangerous.
 
 \subsubsection{Time Intervals}
-PSMC makes population history estimates over a variety of times which are split up into discrete intervals. The intervals are split between the present and a maximum estimation time $T_{max}$ which is chosen by PSMC (for more detail, see the S.I. of Li REF). PSMC takes a pattern of intervals in the form of a string '$a$*$b$' where this would be $a$ intervals of length $b$, note that these lengths are in a log scale. By default PSMC assumes a pattern of intervals '4+5*3+4' which is 4 intervals of length 1 followed by 5 intervals of length 3 followed by 4 intervals of length 1 again. For our experiments we ignored any intervals of length other than 1 and considered only splitting into equal length intervals of '10', '20', '30' and '40'.
+Times in which a bin's TMRCA falls into is split up into discrete intervals, which can be specified in the input of the program. The intervals are split between the present and a maximum estimation time $T_{max}$ which is chosen by PSMC (for more detail, see the S.I. of Li \cite{li2011inference}). PSMC takes a pattern of intervals in the form of a string '$a$*$b$' where this would be $a$ intervals of length $b$. By default PSMC assumes a pattern of intervals '4+5*3+4' which is 4 intervals of length 1 followed by 5 intervals of length 3 followed by 4 intervals of length 1 again. For our experiments we ignored any intervals of length other than 1 and considered only splitting into equal length intervals of '10', '20', '30' and '40'.
 
-This is how I think it works: THESE ARE NOT ``REAL'' TIMES WHICH WE PLOT ON THE X AXIS OF OUR PSMC GRAPHS. The time intervals are where the TMRCAs fall into. Thus, for a '4+5*3+4' run, there would be 7 intervals, which I confirm in R.
-\begin{lstlisting}
-> unique(kanga1$pop_hist)
-[1] 2650.219 2824.702 1363.328 1216.244 1562.255 3080.304 7831.582
-\end{lstlisting}
+%This is how I think it works: THESE ARE NOT ``REAL'' TIMES WHICH WE PLOT ON THE X AXIS OF OUR PSMC GRAPHS. The time intervals are where the TMRCAs fall into. Thus, for a '4+5*3+4' run, there would be 7 intervals, which I confirm in R.
+%\begin{lstlisting}
+%> unique(kanga1$pop_hist)
+%[1] 2650.219 2824.702 1363.328 1216.244 1562.255 3080.304 7831.582
+%\end{lstlisting}
 
 % HOW IT WORKS: I'm not 100\% sure, but this is what I think. For example, let's say you ran PSMC with the interval parameters ``4+5*3+4''. This means that you've got 4 intervals of length 1, then 5 intervals of length 3, then 4 intervals of length 1. Intervals of length greater than 1 are made up of multiple atomic intervals, therefore the total number of intervals you have is $4+5\times3+4=23$. Meanwhile, while running PSMC, if you don't specify a \verb|-t| switch, the default maximum coalescent time ($T_\text{max}$ I think) is 15 (\verb|-t FLOAT    maximum 2N0 coalescent time [15]| from running the program without any input). This is on the $2N_0$ scale
 
 \subsubsection{Contig Length in Real Data}\label{contigLength}
-One difference between the simulated and the real data is the number of base pairs that are in each contig. Where simulated data has a constant number specified in the \verb|ms| command, real data has a number of varied lengths per contig. The script \verb|summaryStatistics.py| takes a \verb|.psmcfa| file as an input and prints a tab delimited table of the minimum, maximum, median and of base pairs in each contig in the given file as well as the total number of base pairs in the entire file. We used these summary files when considering the effect of breaking up the data had on the error.
+One difference between the simulated and the real data is the number of base pairs that are in each contig. Where simulated data has a constant number (specified in the \verb|ms| command), real data has a number of varied lengths per contig. The script \verb|summaryStatistics.py| takes a \verb|.psmcfa| file as an input and prints a tab delimited table of the minimum, maximum, median and of base pairs in each contig in the given file as well as the total number of base pairs in the entire file. We used these summary files when considering the effect of breaking up the data on the error.
 
 \subsection{Running PSMC}
-PSMC requires a \verb|.psmcfa| file as input for the genetic data and can take several switches that modify default behaviour. We used the \verb|-p| switch to specify different time intervals as discussed above. For example, running PSMC using the following command
+PSMC requires a \verb|.psmcfa| file as input can take several switches that modify default behaviour. We used the \verb|-p| switch to specify different time intervals as discussed above. For example, running PSMC using the following command
 \begin{verbatim}
 		./psmc -p '40*1' inputFile.psmcfa > outputFile.psmc
 \end{verbatim}
-performs PSMC on the given input file using 40 equal length time intervals.
+performs PSMC on the given input file using 40 equal length time intervals. Run psmc without any input file to see further options.
 
 \subsubsection{PSMC Output Files (.psmc)}
-The output files generated by PSMC are a tab delimited text format, where the first two characters on each line defines what values are on the line. The output files always contain a header which gives some information on the format and then the estimates for each iteration of the Baum-Welch algorithm used in PSMC. The last table contains the estimates from the final iteration, this is the data we used for our analysis. The last table can be extracted as a tab delimited table using the script \verb|removeDataFromPSMC.sh|. This script takes a \verb|.psmc| output file as its input and then outputs the final table in the file as a tab delimited text file.
+The output files generated by PSMC are a (roughly) tab delimited text format, where the first two characters on each line defines what values are on the line. The output files always contain a header which gives some information on the format, and then parameter estimates for each iteration of the Baum-Welch algorithm used in PSMC. The last table contains the estimates from the final iteration, this is the data we used for our analysis. The last table can be extracted as a tab delimited table using the script \verb|removeDataFromPSMC.sh|. This script takes a \verb|.psmc| output file as its input and then outputs the final table in the file as a tab delimited text file.
 
-PSMC gives scaled output \cite{li2011inference}. To get the time in terms of $N_0$ generations past, \verb|t_k| needs to be divided by 2. The population given is in terms of $\lambda_k$, which is the proportion relative to $N_0$. $N_0$ is defined as ``effective population size'', but what that means specifically is unclear.
+PSMC gives scaled output \cite{li2011inference}. The time $t_k$ is in terms of 2$N_0$ generations. The population given is in terms of $\lambda_kN_0$, which is the proportion relative to $N_0$. $N_0$ is defined as ``effective population size'', but what that means specifically is unclear. $N_0$ can be obtained by the formula $N_0=\theta/(4\mu s)$ (for further detail, see Section \ref{PlotPSMC}).
 
 \subsection{Automating the simulations}
 %See \verb|runSimulations.sh|
 
-Simulating the data through to obtaining the PSMC results is a multi-step process that can be automated to save time and effort. The script \verb|runSimulations.sh| completes the entire process autonomously, after some minor initial tweaking by the user. The user should modify the variable \verb|simulationName|, at the top of the file, which gives a prefix to every file and folder used in the script, and modify the \verb|msHOT-lite| function call, which dictates the population demography. After these changes are made the script will run through and simulate the genome, split the genome, usually up to 1024 times, generate the PSMC input files, run PSMC and finally write the output to a file. These files are then organised into folders based on the run parameters and compressed into a single archive. Analysis can then be easily performed on the files and their respective simulated results.
+Simulating the data through to obtaining the PSMC results is a multi-step process that can be automated to save time and effort. The script \verb|runSimulations.sh| completes the entire process automatically, after some minor initial tweaking by the user. The user should modify the variable \verb|simulationName|, at the top of the file, which gives a prefix to every file and folder used in the script, and modify the \verb|msHOT-lite| function call, which dictates the population demography (example populaton dyamics can be found in the S.I. of Li's paper \cite{li2011inference}). After these changes are made, the script will run through and simulate the genome, split the genome, usually up to 1024 times, generate the PSMC input files, run PSMC and finally write the output to a text file. These files are then organised into folders based on the run parameters and compressed into a single archive. Analysis in R can then be easily performed on the files and their respective simulated results.
 
 \subsection{Automating data collection for real data}
-If you want to run a whole array of splits, different PSMC intervals etc. on real data, use the script \verb|runDataCollection.sh| (which should be able to be modified if other things need to be tested). This will loop through different combinations of splits, intervals etc. and output the results each to its own folder. Also, summary statistics are given as in Section \ref{contigLengths}. This can be analysed in R using \verb|steppeBisonAnalysis.R| (obviously other things would have to be changed for using a different animal).
+If you want to run a whole array of splits, different PSMC intervals etc. on real genomic data, use the script \verb|runDataCollection.sh| (which should be able to be modified if other things need to be tested). This will loop through different combinations of splits, intervals etc. and output the results each to its own folder. Also, summary statistics are given as in Section \ref{contigLength}. This can be analysed in R using \verb|steppeBisonAnalysis.R| (obviously other things would have to be changed for using a different animal).
 
 \subsection{PSMC Errors}
-A goal of this project was to find a measure of error for the PSMC output. As we were originally working with \verb|msHOT-lite| simulations, we knew the exact population dynamics, and thus had a baseline to compare PSMC runs with. The output of PSMC is a set of time points with relative populations corresponding to each point. The method of error analysis we used was turning the PSMC's time points into a piecewise constant function, as well as making the \verb|msHOT-lite| true population dynamics into a piecewise constant function. Then we took the absolute difference between the two functions and integrated over a reasonable range, on a log time scale. In Li's paper \cite{li2011inference}, his reported range where PSMC gave good results was 20 kyr to 30 Myr. However, as Li's decision appeared to be arbitrary, we also experimented with other limits of integration. When comparing many PSMC runs, we took the set of minimum time values, found the maximum of that, and used this value as the lower limit of integration. Similarly, the minimum of maximums was used as the upper limit of integration. This ensured that the piecewise constant functions were defined for all PSMC runs over the range of integration. Sometimes the limits of integration were chosen by eye - for example in \verb|steppeBisonPartAnalysis.R|, the lower and upper limits were chosen to be -1 and 1 (on a log scale, from the PSMC output in terms of $2N_0$ generations), by looking at plots of the graphs and finding where they look reasonable. We believe this is how Li chose his limits. Finding errors was done by \verb|StringExtraction_ErrorAnalysis.R|. However, with actual genomes, the ``error'' term we looked at was the split/part genomes versus full genome, as opposed to PSMC estimates versus true.
+A goal of this project was to find a measure of error for the PSMC output. As we were originally working with \verb|msHOT-lite| simulations, we knew the exact population dynamics, and thus had a baseline to compare PSMC runs with. The output of PSMC is a set of time points with relative populations corresponding to each point. The method of error analysis we used was turning the PSMC's time points into a piecewise constant (step) function, as well as making the \verb|msHOT-lite| true population dynamics into a piecewise constant function. Then we took the absolute difference between the two functions and integrated over a reasonable range, on a log time scale. In Li's paper \cite{li2011inference}, his reported range where PSMC gave good results was 20 kyr to 30 Myr. However, as Li's decision appeared to be arbitrary, we also experimented with other limits of integration. When comparing many PSMC runs, we took the set of minimum time values, found the maximum of that, and used this value as the lower limit of integration. Similarly, the minimum of maximums was used as the upper limit of integration. This ensured that the piecewise constant functions were defined for all PSMC runs over the range of integration. Sometimes the limits of integration were chosen by eye - for example in \verb|steppeBisonPartAnalysis.R|, the lower and upper limits were chosen to be -1 and 1 (on a log scale, from the PSMC output in terms of $2N_0$ generations), by looking at plots of the graphs and finding where they look reasonable. We believe this is how Li chose his limits (although if there is a statistical argument, that would be interesting). Finding errors was done by \verb|StringExtraction_ErrorAnalysis.R|. However, with actual genomes, the ``error'' term we looked at was the split/part genome population estimates versus full genome estimates, as opposed to PSMC estimates versus true dynamics.
 
 \subsection{Statistical Analysis of Error}
 A variety of simulations were run, using techniques laid out in Section \ref{sec:methods}. Various population dynamics were inputted in \verb|msHOT-lite|, mostly based upon runs from Li's paper \cite{li2011inference} (see various \verb|.sh| files in the \verb|msParameters| folder). Each population dynamic was trialled with 1 chromosome of varying lengths - 0.1, 0.5, 1, 5, 10 and 20 Mbp. However, in the modelling, only the 20 Mbp length was used. The PSMC time intervals used were 10, 20, 30 and 40. To assess effect of contig length, each trial also had binary chromosome splitting, from $2^0$ to $2^{10}$. Each ms output file was converted to a \verb|.psmcfa| file, then PSMC was run, and the output extracted with \verb|removeDataFromPSMC.sh|. The R script \verb|MixedEffNew160128.R| was used in multiple regression and mixed effects modelling (see this file for further detail).
@@ -156,6 +149,10 @@ For the steppe bison, there was an unusual trend when splitting the data (see Fi
 \subsection{Deleting Data}
 Analysis of the deleting data experiment using the R script \verb|sim2PartAnalysis.R| yielded the PSMC plots Figure \ref{deletedDataPsmcPlots} (showing the different population estimates) and Figure \ref{sim2ErrorVsMeanContigLength} (showing the error for different mean contig lengths). Figure \ref{sim2ErrorVsMeanContigLength} was found to give a well-fitted straight line if a log transform was applied to the mean contig length.
 
+It was suggested that a better alternative to randomly deleting lines would be to randomly replace lines with missing data (\verb|N| in the \verb|.psmcfa| file type). This would be representative of a low quality genome, and would allow comparison of error between a full genome and a genome with missing data.
+
+It may be possible to construct a predictor for error based upon the amount of missing data, but this would be based upon extrapolation, so would be dangerous.
+
 \begin{figure}[h]
   \center
   \includegraphics[width=1\linewidth]{figures/deletedDataPsmcPlots.png}
@@ -167,6 +164,9 @@ Analysis of the deleting data experiment using the R script \verb|sim2PartAnalys
   \includegraphics[width=.7\linewidth]{figures/sim2ErrorVsMeanContigLength.png}
   \caption{Relationship between error and mean contig length.}\label{sim2ErrorVsMeanContigLength}
 \end{figure}
+
+\subsubsection{Time Intervals}
+Be careful of what intervals you use - if the resolution is too low, it can look like there is a sharp population decrease when it is actually gradual.
 
 \subsection{Statistical Analysis of Error}
 To get an idea of the relationships between variables, a multiple regression model was fitted first (see \verb|MixedEffNew160128.R|). Output from the best:
@@ -332,7 +332,7 @@ These are the only R files worth looking at.
 \parbox[t]{5cm}{\texttt{PSMC\_Regression/}\\ \texttt{StringExtraction\_ErrorAnalysis.R}} & Extracts information about the genome and PSMC run, does an error analysis, and outputs to text files. Designed for use with ms simulations, but can be adapted to be used with real data.\\ \hline
   \parbox[t]{5cm}{\texttt{PSMC\_Regression/}\\ \texttt{MixedEffNew160128.R}} & Attempt at fitting multiple regression, and then mixed effects model to various simulated genomes. It wasn't successful in producing a good model. There may be some dodgy things here, like failing independence assumptions, and using a Box-Cox transform for a mixed effects model (?). \\ \hline
   \parbox[t]{5cm}{\texttt{redKangaroo/}\\ \texttt{redKangarooRPlots.R}} & Plots various PSMC runs of the red kangaroo dataset. Also includes ice age start and end. \\ \hline
-  \texttt{Mixed Effects Test.R} & An example, following the instructions of Zuur (2009) on how to fit mixed effects models in R.
+  \texttt{Mixed Effects Test.R} & An example, following the instructions of Zuur (2009) on how to fit mixed effects models in R. \\
   \hline
 \end{tabular}
 \end{table}
